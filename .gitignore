@@ -1,6 +1,12 @@
-node_modules/
+data/
+backups/
+.venv/
+__pycache__/
+.pytest_cache/
+.test-run*/
+*.pyc
+*.log
 .env
 .env.*
 !.env.example
-.DS_Store
-*.log
+node_modules/

@@ -1,50 +1,55 @@
 # Lamma | لَمّة
 
-Cardboard collection and pickup-round planning prototype for SolveThe17, SDG 11.
+Bilingual Arabic/English cardboard pickup application for shops and collectors.
+Read [START-HERE.md](START-HERE.md) for the local Arabic walkthrough.
 
-## Current prototype
+## Features
 
-- Arabic, mobile-friendly shop and collector views.
-- Add and cancel collection requests.
-- Suggest rounds using approximate location, capacity and pickup period.
-- Reserve requests, release unfinished stops, and record actual weight and agreed price.
-- Display collected weight and transaction totals.
+- Separate accounts and server-enforced ownership/roles.
+- Shared persisted data; SQLite locally, PostgreSQL connection support for hosting.
+- Atomic exclusive booking; collector receipts confirmed or returned by the shop.
+- Confirmation-only totals computed across all records, cursor pagination and area search.
+- Optional pickup coordinates, hidden along with the address until booking; external map link.
+- Email verification, single-use expiring recovery tokens, session revocation and idle timeout.
+- Local development mailbox; optional queued SMTP delivery worker.
+- Arabic and English, RTL/LTR, responsive layouts, labelled forms and status messages.
 
-The role switcher is a demo control, not authentication. Data is stored only in the current browser's localStorage. Locations are illustrative area centers; distances are straight-line estimates, not driving routes. Recorded collections do not prove recycling. Transaction totals are not collector profit.
+## Run
 
-## Run locally
-
-Requires Python 3 for the local static server:
+Python 3.12:
 
 ```sh
-python -m http.server 8000 --directory dist
+python -m venv .venv
+# Activate .venv for your platform
+pip install -r requirements-lock.txt
+python server.py
 ```
 
-Open http://localhost:8000. No dependency installation or API keys are needed for this prototype.
+Open http://127.0.0.1:8002. `python manage.py mailbox` displays LOCAL development emails.
+The app uses Waitress (8 bounded worker threads), not Python's demonstration HTTP server.
 
-## Project files
+## Verify
 
-- `dist/index.html`: page structure.
-- `dist/style.css`: responsive styling.
-- `dist/app.js`: demo state, requests, rounds and receipts.
+```sh
+python -m pytest -q
+node --check dist/app.js
+python load_smoke.py
+```
 
-## Planned multi-user MVP
+The test suite covers booking contention, permissions, private location visibility,
+receipt confirmation, recovery/replay, CSRF/header defenses, throttling, pagination,
+expiry/revocation, and migration from the original local database.
+GitHub Actions also runs an isolated PostgreSQL booking test.
 
-- Arabic and English with RTL/LTR layouts.
-- Authentication and server-enforced shop, collector and admin permissions.
-- Shared database and atomic request booking.
-- Real pickup locations and map display.
-- Shop confirmation of collection weight and price.
-- Role-specific summaries and operational administration.
+See [VERIFICATION.md](VERIFICATION.md), [DEPLOYMENT.md](DEPLOYMENT.md) and [SECURITY.md](SECURITY.md).
 
-These features are not implemented in the current prototype.
+## Boundaries
 
-## Verification
+No public deployment, real mail delivery, payments, automated route optimization,
+admin dashboard or recycling verification is claimed. Browser-local prototype records
+are not imported. Existing database accounts and requests are retained by an additive
+migration; old sessions are invalidated and accounts must verify email.
 
-JavaScript syntax and simulated request lifecycle checks passed for capacity selection, booking, completion and transaction totals. Browser visual QA remains pending.
-
-## GitHub destination
-
-https://github.com/Abdullah-Ahmed419/lamma
-
-Never commit credentials or personal customer information. The demo does not currently require an environment file.
+Do not commit data/, backups/, .env, or mailbox output. Local SQLite is for a single
+machine, not shared storage across replicas. The Docker/PostgreSQL package requires
+validation on the intended hosting environment before launch.
